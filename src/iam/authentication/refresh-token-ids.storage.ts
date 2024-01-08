@@ -10,20 +10,20 @@ import { InvalidateRefreshTokenError } from './errors/invalidate-refresh-token.e
 export class RefreshTokenIdsStorage
   implements OnApplicationBootstrap, OnApplicationShutdown
 {
-  private redisCLient: Redis;
+  private redisClient: Redis;
   onApplicationBootstrap() {
-    this.redisCLient = new Redis({ host: 'localhost', port: 6379 });
+    this.redisClient = new Redis({ host: 'localhost', port: 6379 });
   }
   onApplicationShutdown(signal?: string) {
-    this.redisCLient.quit();
+    this.redisClient.quit();
   }
 
   async insert(userId: number, tokenId: string): Promise<void> {
-    await this.redisCLient.set(this.getKey(userId), tokenId);
+    await this.redisClient.set(this.getKey(userId), tokenId);
   }
 
   async validate(userId: number, tokenId: string): Promise<boolean> {
-    const storedId = await this.redisCLient.get(this.getKey(userId));
+    const storedId = await this.redisClient.get(this.getKey(userId));
     if (storedId != tokenId) {
       throw new InvalidateRefreshTokenError();
     }
@@ -31,7 +31,7 @@ export class RefreshTokenIdsStorage
   }
 
   async invalidate(userId: number): Promise<void> {
-    await this.redisCLient.del(this.getKey(userId));
+    await this.redisClient.del(this.getKey(userId));
   }
 
   private getKey(userId: number): string {
